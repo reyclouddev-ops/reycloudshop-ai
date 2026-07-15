@@ -230,11 +230,16 @@ await res.json();
 
 removeTyping();
 
-addMessage(
-data.result ||
-"AI tidak merespons.",
-"bot"
-);
+console.log(data);
+
+if (data.success) {
+    addMessage(data.result, "bot");
+} else {
+    addMessage(
+        data.error || data.message || JSON.stringify(data),
+        "bot"
+    );
+}
 
 }catch(err){
 
