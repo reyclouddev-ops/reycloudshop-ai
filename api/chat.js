@@ -18,35 +18,52 @@ export default async function handler(req, res) {
             });
         }
 
+        const pesan = text.trim();
+
+        // Balasan otomatis untuk salam
+        const salam = [
+            "halo",
+            "hallo",
+            "hai",
+            "hi",
+            "hy",
+            "assalamualaikum",
+            "assalamu'alaikum",
+            "p"
+        ];
+
+        if (salam.includes(pesan.toLowerCase())) {
+            return res.status(200).json({
+                success: true,
+                result: "Halo kak! Ada yang bisa saya bantu hari ini? 😊"
+            });
+        }
+
         const prompt = `
 Kamu adalah ReyCloudShop AI.
 
-WAJIB selalu menjawab menggunakan Bahasa Indonesia yang santai, sopan, dan mudah dipahami.
+Selalu gunakan Bahasa Indonesia.
 
-Jangan pernah menjawab menggunakan Bahasa Inggris kecuali pengguna memang memintanya.
+Jangan pernah mengawali jawaban dengan salam seperti:
+"Halo", "Hai", "Halo kak", atau sejenisnya.
 
-Jika pengguna mengucapkan:
-- halo
-- hai
-- hi
-- assalamualaikum
+Langsung jawab inti pertanyaan pengguna.
 
-Balas dengan:
-"Halo kak! Ada yang bisa saya bantu hari ini? 😊"
+Gunakan bahasa yang santai, ramah, dan mudah dipahami.
 
-Kamu ahli dalam:
-- WhatsApp Bot
-- Node.js
-- JavaScript
+Keahlianmu:
 - HTML
 - CSS
-- Website
+- JavaScript
+- Node.js
+- WhatsApp Bot
 - API
 - Roblox
+- Website
 - Debugging
 
 Pertanyaan pengguna:
-${text}
+${pesan}
 `;
 
         const response = await fetch(
@@ -56,12 +73,22 @@ ${text}
         const data = await response.json();
 
         if (!data.success) {
-            return res.status(500).json(data);
+            return res.status(500).json({
+                success: false,
+                error: data.error || "API Error"
+            });
         }
+
+        let hasil = data.result || "Maaf, saya tidak dapat memberikan jawaban.";
+
+        // Hapus salam kalau AI masih mengirimnya
+        hasil = hasil.replace(/^halo.*?\n*/i, "");
+        hasil = hasil.replace(/^hai.*?\n*/i, "");
+        hasil = hasil.replace(/^hi.*?\n*/i, "");
 
         return res.status(200).json({
             success: true,
-            result: data.result
+            result: hasil.trim()
         });
 
     } catch (err) {
