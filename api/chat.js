@@ -1,70 +1,38 @@
-import OpenAI from "openai";
-
-const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
-
 export default async function handler(req, res) {
 
     if (req.method !== "POST") {
         return res.status(405).json({
             success: false,
-            message: "Method Not Allowed"
+            message: "Method tidak diizinkan"
         });
     }
 
     try {
 
-        const {
-            text,
-            prompt,
-            model
-        } = req.body;
+        const { text } = req.body;
 
         if (!text) {
             return res.status(400).json({
                 success: false,
-                message: "Pesan tidak boleh kosong."
+                message: "Pesan kosong."
             });
         }
 
-        const response = await client.responses.create({
+        const url = `https://api.lexcode.biz.id/api/ai/gpt/5.5?text=${encodeURIComponent(text)}`;
 
-            model: model || "gpt-5",
-
-            input: [
-                {
-                    role: "system",
-                    content: prompt || "Kamu adalah AI Assistant."
-                },
-                {
-                    role: "user",
-                    content: text
-                }
-            ]
-
-        });
+        const response = await fetch(url);
+        const data = await response.json();
 
         return res.status(200).json({
-
             success: true,
-
-            result: response.output_text
-
+            result: data.result
         });
 
     } catch (err) {
 
-        console.error(err);
-
         return res.status(500).json({
-
             success: false,
-
-            error: err.message,
-
-            detail: err.error || null
-
+            error: err.message
         });
 
     }
